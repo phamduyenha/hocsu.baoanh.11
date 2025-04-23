@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Lịch Sử</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .quiz-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+    .question {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .answers button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #eef2f7;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .answers button.correct {
+      background: #c8f7c5;
+      border-color: #2ecc71;
+    }
+    .answers button.wrong {
+      background: #f9c0c0;
+      border-color: #e74c3c;
+    }
+    .next-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+    .score {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div id="question-container" class="question">Đang tải câu hỏi...</div>
+    <div id="answer-buttons" class="answers"></div>
+    <button id="next-button" class="next-btn">Câu tiếp theo</button>
+    <div id="score-container" class="score"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "Nửa sau thế kỉ XIV, cuộc khởi nghĩa nông dân nào sau đây đã diễn ra để chống lại nhà Trần?", answers: [ { text: "Khởi nghĩa Ngô Bệ (Hải Dương)", correct: true }, { text: "Khởi nghĩa Phan Bá Vành (Thái Bình)", correct: false }, { text: "Khởi nghĩa Yên Thế (Bắc Giang)", correct: false }, { text: "Khởi nghĩa Lam Sơn (Thanh Hoá)", correct: false } ] },
+      { question: "Cuộc cải cách của Hồ Quý Ly tiến hành trong bối cảnh lịch sử nào sau đây?", answers: [ { text: "Nước Đại Việt lâm vào khủng hoảng trầm trọng.", correct: true }, { text: "Nhà Trần đang giai đoạn phát triển thịnh đạt.", correct: false }, { text: "Giặc Tống sang xâm lược nước ta lần thứ nhất.", correct: false }, { text: "Chế độ phong kiến Việt Nam phát triển đỉnh cao.", correct: false } ] },
+      { question: "Một trong những chính sách cải cách trên lĩnh vực kinh tế của Hồ Quý Ly là?", answers: [ { text: "Ban hành tiền giấy thay thế cho tiền đồng.", correct: true }, { text: "Ban hành tiền đồng thay thế cho tiền giấy.", correct: false }, { text: "Phát hành tiền đồng 'Thái Bình hưng bảo'.", correct: false }, { text: "Phát hành tiền giấy 'Việt Nam đồng'.", correct: false } ] },
+      { question: "Hồ Quý Ly ban hành chính sách hạn điền nhằm mục đích gì?", answers: [ { text: "Hạn chế sở hữu ruộng tư, đánh mạnh vào chế độ điền trang.", correct: true }, { text: "Giải quyết nhu cầu về ruộng đất cho nông dân nghèo.", correct: false }, { text: "Thể hiện sự quan tâm đến sản xuất, giúp nông nghiệp phát triển.", correct: false }, { text: "Quy định số lượng gia nô được sở hữu của vương hầu, quý tộc.", correct: false } ] },
+      { question: "Cuộc cải cách hành chính lớn nhất dưới triều Nguyễn được tiến hành bởi ai?", answers: [ { text: "Minh Mạng", correct: true }, { text: "Gia Long", correct: false }, { text: "Tự Đức", correct: false }, { text: "Hàm Nghi", correct: false } ] },
+      { question: "Năm 1460, Lê Thánh Tông lên ngôi trong bối cảnh nào?", answers: [ { text: "Nhà Lê lâm vào khủng hoảng, suy yếu.", correct: true }, { text: "Tình hình đất nước từng bước ổn định.", correct: false }, { text: "Nhà Lê đang ở thời kì phát triển đỉnh cao.", correct: false }, { text: "Nhà Minh đang lăm le xâm lược Đại Việt.", correct: false } ] }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question-container');
+    const answerButtonsEl = document.getElementById('answer-buttons');
+    const nextButton = document.getElementById('next-button');
+    const scoreContainer = document.getElementById('score-container');
+
+    function startGame() {
+      currentQuestionIndex = 0;
+      score = 0;
+      scoreContainer.innerHTML = '';
+      nextButton.innerText = 'Câu tiếp theo';
+      nextButton.style.display = 'none';
+      showQuestion();
+    }
+
+    function showQuestion() {
+      resetState();
+      let currentQuestion = questions[currentQuestionIndex];
+      questionEl.innerText = `Câu ${currentQuestionIndex + 1}: ` + currentQuestion.question;
+      currentQuestion.answers.forEach(answer => {
+        const button = document.createElement('button');
+        button.innerText = answer.text;
+        button.classList.add('btn');
+        if (answer.correct) button.dataset.correct = answer.correct;
+        button.addEventListener('click', selectAnswer);
+        answerButtonsEl.appendChild(button);
+      });
+    }
+
+    function resetState() {
+      nextButton.style.display = 'none';
+      while (answerButtonsEl.firstChild) {
+        answerButtonsEl.removeChild(answerButtonsEl.firstChild);
+      }
+    }
+
+    function selectAnswer(e) {
+      const selectedBtn = e.target;
+      const correct = selectedBtn.dataset.correct === 'true';
+      if (correct) {
+        selectedBtn.classList.add('correct');
+        score++;
+      } else {
+        selectedBtn.classList.add('wrong');
+      }
+
+      Array.from(answerButtonsEl.children).forEach(button => {
+        if (button.dataset.correct === 'true') button.classList.add('correct');
+        button.disabled = true;
+      });
+      nextButton.style.display = 'block';
+    }
+
+    nextButton.addEventListener('click', () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        showScore();
+      }
+    });
+
+    function showScore() {
+      resetState();
+      questionEl.innerText = 'Bạn đã hoàn thành bài quiz!';
+      scoreContainer.innerText = `Điểm của bạn: ${score} / ${questions.length}`;
+      nextButton.innerText = 'Chơi lại';
+      nextButton.style.display = 'block';
+      nextButton.onclick = startGame;
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
